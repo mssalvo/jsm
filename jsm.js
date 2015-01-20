@@ -165,7 +165,7 @@ jsmCommand.appendTo = function(e) {
         d.body.appendChild(this.get(0));
         return this
     } else {
-        if (this.util.isObject(e)) {
+        if ("object" == typeof e) {
             if (e.appendChild) {
                 e.appendChild(this.element)
             } else {
@@ -186,7 +186,7 @@ jsmCommand.put = function(e) {
     if (e == null || e == "undefined" || !this.get(0).appendChild) {
         return this
     } else {
-        if (this.util.isObject(e)) {
+        if ("object" == typeof e) {
             if (e.element) {
                 this.get(0).appendChild(e.get(0))
             } else {

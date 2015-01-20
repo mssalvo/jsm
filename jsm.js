@@ -338,10 +338,10 @@ jsmCommand.highlight = function(opts) {
     return this
 }
 jsmCommand.animateText = function(opts) {
-    var delay = opts && opts.delay ? opts.delay : 10, duration = opts && opts.duration ? opts.duration : 3000, delta_ = opts && opts.delta ? opts.delta : "linear", elem = this.get(0), text = elem.value, to = text.length, from = 0;
+    var delay = opts && opts.delay ? opts.delay : 10, duration = opts && opts.duration ? opts.duration : 3000, delta_ = opts && opts.delta ? opts.delta : "linear", elem = this.get(0), text = elem.value ? elem.value : elem.innerHTML, to = text.length, from = 0, prop = elem.value ? "value" : "innerHTML";
     this.moves({delay: delay, duration: duration, delta: delta_, step: function(delta) {
             var result = (to - from) * delta + from;
-            elem.value = text.substr(0, Math.ceil(result));
+            elem[prop] = text.substr(0, Math.ceil(result));
         }});
     return this;
 }

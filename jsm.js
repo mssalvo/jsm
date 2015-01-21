@@ -1,6 +1,6 @@
 /**
  * @author Salvatore Mariniello
- *from https://github.com/mssalvo/jsm
+ * from https://github.com/mssalvo/jsm
  *
  The contents of this file are subject to the Mozilla Public License
  Version 1.1 (the "License"); you may not use this file except in
@@ -23,7 +23,7 @@
 
 function jsmScript(e, c) {
     c.element ? c = c.element[0] : c ? c = c : c = d;
-    e ? (this.element = e.element ? e.element : (typeof e == "string" && /^<(\w+)\s*\/?>(?:<\/\1>|)$/.exec(e)) ? [d.createElement(/^<(\w+)\s*\/?>(?:<\/\1>|)$/.exec(e)[1])] : typeof e == "string" ? c.querySelectorAll(e) : e.length ? e : [e]) : this.element = {}
+    e ? (this.element = e.element ? e.element : (typeof e == "string" && /^<(\w+)\s*\/?>(?:<\/\1>|)$/.exec(e)) ? [d.createElement(/^<(\w+)\s*\/?>(?:<\/\1>|)$/.exec(e)[1])] : typeof e == "string" ? c.querySelectorAll(e) : e.length ? e : [e]) : this.element = {}; 
 }
 var jsm = function(s, c) {
     return new jsmScript(s ? s : 0, c ? c : 0)
@@ -152,7 +152,7 @@ jsmCommand.remove = function() {
 jsmCommand.append = function() {
     if (!this.util.isUndefined(this.get(0))) {
         if (this.get(0).appendChild) {
-            this.get(0).appendChild(this.element)
+            d.body.appendChild(this.get(0))
         } else {
             this.get(0).parentNode.appendChild(this.get(0))
         }
@@ -167,7 +167,7 @@ jsmCommand.appendTo = function(e) {
     } else {
         if ("object" == typeof e) {
             if (e.appendChild) {
-                e.appendChild(this.element)
+                e.appendChild(this.element[0])
             } else {
                 e.parentNode.appendChild(this.get(0))
             }
@@ -314,40 +314,47 @@ jsmCommand.grafic.convertToRGB = function(h) {
 }
 //tipi di animazioni possibili > linear - circ - quad - elastic - bounce - makeEaseOut - bounceEaseOut - makeEaseInOut - bounceEaseInOut  
 jsmCommand.moves = function(opts) {
-    var start = new Date(), elements = this.get(0), durations = opts.duration || 600, delay = opts.delay || 100, fdelta = this.grafic[opts.delta || "linear"];
+		 
+    var start = new Date(), elements = this.get(0), durations = opts.duration || 600, delay = opts.delay || 100, fdelta = this.grafic[opts.type || "linear"];
     var idanimate = setInterval(function() {
         var timePassed = new Date() - start, progress = timePassed / durations;
         if (progress > 1) {
             progress = 1
         }
         var delta = fdelta(progress, 1.5);
+
         if (opts.step) 
             opts.step(delta)
       
-        if (progress >= 1) 
-            clearInterval(idanimate)
-    
+        if (progress >= 1){ 
+          clearInterval(idanimate)
+		if (opts.fn && typeof opts.fn == typeof Function) 
+            opts.fn(elements)
+			opts.fn=0 
+        }
+		 
     }, delay);
+	
     return this
 }
 jsmCommand.highlight = function(opts) {
     var from_ = opts && opts.backgroundStart ? opts.backgroundStart : "00FF00", to_ = opts && opts.backgroundEnd ? opts.backgroundEnd : "FFFFFF", from = this.grafic.convertToRGB(from_), to = this.grafic.convertToRGB(to_), elem = this.get(0);
-    this.moves({delay: 10, duration: 1000, delta: "linear", step: function(delta) {
+    this.moves({delay: 10, duration: 1000, type: "linear", step: function(delta) {
             elem.style.background = 'rgb(' + Math.max(Math.min(parseInt((delta * (to[0] - from[0])) + from[0], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[1] - from[1])) + from[1], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[2] - from[2])) + from[2], 10), 255), 0) + ')'
-        }});
+        },fn:opts && opts.fn ? opts.fn : 0});
     return this
 }
 jsmCommand.animateText = function(opts) {
-    var delay = opts && opts.delay ? opts.delay : 10, duration = opts && opts.duration ? opts.duration : 3000, delta_ = opts && opts.delta ? opts.delta : "linear", elem = this.get(0), text = elem.value ? elem.value : elem.innerHTML, to = text.length, from = 0, prop = elem.value ? "value" : "innerHTML";
-    this.moves({delay: delay, duration: duration, delta: delta_, step: function(delta) {
-            var result = (to - from) * delta + from;
-            elem[prop] = text.substr(0, Math.ceil(result));
-        }});
+   var delay = opts && opts.delay ? opts.delay : 50, duration = opts && opts.duration ? opts.duration : 6000, delta_ = opts && opts.type ? opts.type : "linear", elem = this.get(0), text = elem.value ? elem.value : elem.innerHTML, to = text.length, from = 0, prop = elem.value ? "value" : "innerHTML";
+    this.moves({ delay: delay, duration: duration, type: delta_, step: function (delta) {
+        var result = (to - from) * delta + from;
+        elem[prop] = text.substr(0, Math.ceil(result));
+    },fn:opts && opts.fn ? opts.fn : 0});
     return this;
 }
 jsmCommand.animate = function(opts) {
-    var delay = opts && opts.delay ? opts.delay : 10, duration = opts && opts.duration ? opts.duration : 1000, delta_ = opts && opts.delta ? opts.delta : "linear", elem = this.get(0);
-    this.moves({delay: delay, duration: duration, delta: delta_, step: function(delta) {
+    var delay = opts && opts.delay ? opts.delay : 10, duration = opts && opts.duration ? opts.duration : 600, delta_ = opts && opts.type ? opts.type : "linear", elem = this.get(0),actual=[];
+    this.moves({delay: delay, duration: duration, type: delta_, step: function(delta) {
             for (var i in opts)
                 switch (i) {
                     case "width":
@@ -377,30 +384,72 @@ jsmCommand.animate = function(opts) {
                     case "borderTopRightRadius":
                     case "borderBottomRightRadius":
                     case "borderBottomLeftRadius":
-                        elem.style[i] = opts[i] * delta + 'px';
-                        break;
+               					case "borderBottomWidth":
+               					case "borderTopWidth":
+               					case "borderLeftWidth":
+               					case "borderRightWidth":
+               					case "letterSpacing":
+					 if(!actual[i]){
+					 actual[i]=String(elem.style[i]).toLowerCase().replace('px','').replace('%','')
+					 actual[i]=!actual[i]?1:actual[i];
+					 }
+					 var valAct=opts[i]-parseFloat(actual[i]);
+					elem.style[i] = (valAct * delta +parseFloat(actual[i])) +'px';
+               					break;
                     case "color":
+               					case "borderColor":
+               					case "borderBottomColor":
+               					case "borderTopColor":
+               					case "borderLeftColor":
+               					case "borderRightColor":
                     case "background":
                     case "backgroundColor":
-                        var from_ = opts && opts.backgroundStart ? opts.backgroundStart : "FFFFFF", from = jsmCommand.grafic.convertToRGB(from_), to = jsmCommand.grafic.convertToRGB(opts[i]);
-                        elem.style[i] = 'rgb(' + Math.max(Math.min(parseInt((delta * (to[0] - from[0])) + from[0], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[1] - from[1])) + from[1], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[2] - from[2])) + from[2], 10), 255), 0) + ')';
-                        break;
-                    case "font":
-                    case "fontFamily":
-                    case "position":
-                        elem.style[i] = opts[i] + '';
-                        break;
-                    default:
-                        break;
+					var from_ = opts && opts.backgroundStart ? opts.backgroundStart : "FFFFFF", from = jsmCommand.grafic.convertToRGB(from_), to = jsmCommand.grafic.convertToRGB(opts[i]);
+					elem.style[i] = 'rgb(' + Math.max(Math.min(parseInt((delta * (to[0] - from[0])) + from[0], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[1] - from[1])) + from[1], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[2] - from[2])) + from[2], 10), 255), 0) + ')';
+              					break;
+              					case "borderStyle":	
+                   case "font":
+                   case "fontFamily":
+              					case "fontWeight":
+              					case "fontStyle":
+                   case "position":
+              					case "lineHeight":
+              					case "wordSpacing":
+              					case "whiteSpace":
+              					case "textTransform":
+              					case "textDecoration":
+              					case "textAlign":
+              					case "verticalAlign":
+              					case "backgroundRepeat":
+              					case "backgroundAttachment":
+              					case "backgroundPosition":
+              					elem.style[i] = opts[i] + '';
+              					break;
+              					case "opacity":
+					if(!actual[i]){
+					 actual[i]=String(elem.style[i]).toLowerCase().replace('px','').replace('%','')
+					 actual[i]=!actual[i]?1:actual[i];
+					 }
+					var valAct=opts[i]-parseFloat(actual[i]);
+					elem.style[i] =  (valAct * delta +parseFloat(actual[i]))+'';
+             					break;
+             					case "backgroundImage":
+             					elem.style[i] = 'url(' + opts[i] + ')';
+             					break;			
+                 default:
+                     break;
                 }
-        }});
+        },fn:opts && opts.fn ? opts.fn : 0});
     return this
 }
+
+
     jsmCommand.hasClass = function (c) {return this }
     jsmCommand.addClass = function (c) { return this }
     jsmCommand.removeClass = function (c) { return this }
     jsmCommand.toggleClass = function (c) { return this.hasClass(c) ? this.removeClass(c) : this.addClass(c); }
-    jsmCommand.util.classReg = function (c) { return new RegExp("(^|\\s+)" + c + "(\\s+|$)"); }
+    jsmCommand.util.regClass = function (c) { return new RegExp("(^|\\s+)" + c + "(\\s+|$)"); }
+ 
     if ('classList' in document.documentElement) {
         jsmCommand.hasClass = function (c) {
             return this.get(0).classList.contains(c);
@@ -416,7 +465,7 @@ jsmCommand.animate = function(opts) {
     }
     else {
         jsmCommand.hasClass = function (c) {
-            return this.util.classReg(c).test(this.get(0).className);
+            return this.util.regClass(c).test(this.get(0).className);
              
         };
         jsmCommand.addClass = function (c) {
@@ -426,7 +475,7 @@ jsmCommand.animate = function(opts) {
             return this
         };
         jsmCommand.removeClass = function (c) {
-            this.get(0).className = this.get(0).className.replace(this.util.classReg(c), ' ');
+            this.get(0).className = this.get(0).className.replace(this.util.regClass(c), ' ');
             return this
         };
     }

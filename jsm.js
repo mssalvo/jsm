@@ -29,7 +29,6 @@ var jsm = function(s, c) {
     return new jsmScript(s ? s : 0, c ? c : 0)
 }, jsmCommand = jsmScript.prototype, d = document;
 jsmCommand.util = {};
-
 jsmCommand.util.isFunction = function(e) {
     return typeof e == typeof Function
 };
@@ -63,7 +62,6 @@ jsmCommand.util.styleProName = function(a, e) {
     }
     return n
 }
-
 jsmCommand.pro = {};
 jsmCommand.pro.forEach = Array.prototype.forEach;
 jsmCommand.pro.slice = Array.prototype.slice;
@@ -148,13 +146,18 @@ jsmCommand.remove = function() {
         this.get(0).parentNode.removeChild(this.get(0));
     return this
 }
-
-jsmCommand.append = function() {
-    if (!this.util.isUndefined(this.get(0))) {
+jsmCommand.append = function(e) {
+    if (!this.util.isUndefined(e)) {
         if (this.get(0).appendChild) {
-            d.body.appendChild(this.get(0))
+	      if ("object" == typeof e) {
+            if (e.element) {
+                this.get(0).appendChild(e.get(0))
+            } else {
+                this.get(0).appendChild(e)
+            }
+        }
         } else {
-            this.get(0).parentNode.appendChild(this.get(0))
+            this.get(0).parentNode.appendChild(e)
         }
     } else
         d.body.appendChild(this.get(0));
@@ -384,66 +387,65 @@ jsmCommand.animate = function(opts) {
                     case "borderTopRightRadius":
                     case "borderBottomRightRadius":
                     case "borderBottomLeftRadius":
-               					case "borderBottomWidth":
-               					case "borderTopWidth":
-               					case "borderLeftWidth":
-               					case "borderRightWidth":
-               					case "letterSpacing":
-					 if(!actual[i]){
-					 actual[i]=String(elem.style[i]).toLowerCase().replace('px','').replace('%','')
-					 actual[i]=!actual[i]?1:actual[i];
-					 }
-					 var valAct=opts[i]-parseFloat(actual[i]);
-					elem.style[i] = (valAct * delta +parseFloat(actual[i])) +'px';
-               					break;
+                    case "borderBottomWidth":
+                    case "borderTopWidth":
+                    case "borderLeftWidth":
+                    case "borderRightWidth":
+                    case "letterSpacing":
+
+                     if(!actual[i]){
+                     actual[i]=String(elem.style[i]).toLowerCase().replace('px','').replace('%','')
+                     actual[i]=!actual[i]?1:actual[i];
+                     }
+                     var valAct=opts[i]-parseFloat(actual[i]);
+                    elem.style[i] = (valAct * delta +parseFloat(actual[i])) +'px';
+                    break;
                     case "color":
-               					case "borderColor":
-               					case "borderBottomColor":
-               					case "borderTopColor":
-               					case "borderLeftColor":
-               					case "borderRightColor":
+                    case "borderColor":
+                    case "borderBottomColor":
+                    case "borderTopColor":
+                    case "borderLeftColor":
+                    case "borderRightColor":
                     case "background":
                     case "backgroundColor":
-					var from_ = opts && opts.backgroundStart ? opts.backgroundStart : "FFFFFF", from = jsmCommand.grafic.convertToRGB(from_), to = jsmCommand.grafic.convertToRGB(opts[i]);
-					elem.style[i] = 'rgb(' + Math.max(Math.min(parseInt((delta * (to[0] - from[0])) + from[0], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[1] - from[1])) + from[1], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[2] - from[2])) + from[2], 10), 255), 0) + ')';
-              					break;
-              					case "borderStyle":	
-                   case "font":
-                   case "fontFamily":
-              					case "fontWeight":
-              					case "fontStyle":
-                   case "position":
-              					case "lineHeight":
-              					case "wordSpacing":
-              					case "whiteSpace":
-              					case "textTransform":
-              					case "textDecoration":
-              					case "textAlign":
-              					case "verticalAlign":
-              					case "backgroundRepeat":
-              					case "backgroundAttachment":
-              					case "backgroundPosition":
-              					elem.style[i] = opts[i] + '';
-              					break;
-              					case "opacity":
-					if(!actual[i]){
-					 actual[i]=String(elem.style[i]).toLowerCase().replace('px','').replace('%','')
-					 actual[i]=!actual[i]?1:actual[i];
-					 }
-					var valAct=opts[i]-parseFloat(actual[i]);
-					elem.style[i] =  (valAct * delta +parseFloat(actual[i]))+'';
-             					break;
-             					case "backgroundImage":
-             					elem.style[i] = 'url(' + opts[i] + ')';
-             					break;			
-                 default:
-                     break;
+                    var from_ = opts && opts.backgroundStart ? opts.backgroundStart : "FFFFFF", from = jsmCommand.grafic.convertToRGB(from_), to = jsmCommand.grafic.convertToRGB(opts[i]);
+                    elem.style[i] = 'rgb(' + Math.max(Math.min(parseInt((delta * (to[0] - from[0])) + from[0], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[1] - from[1])) + from[1], 10), 255), 0) + ',' + Math.max(Math.min(parseInt((delta * (to[2] - from[2])) + from[2], 10), 255), 0) + ')';
+                    break;
+                    case "borderStyle":	
+                    case "font":
+                    case "fontFamily":
+                    case "fontWeight":
+                    case "fontStyle":
+                    case "position":
+                    case "lineHeight":
+                    case "wordSpacing":
+                    case "whiteSpace":
+                    case "textTransform":
+                    case "textDecoration":
+                    case "textAlign":
+                    case "verticalAlign":
+                    case "backgroundRepeat":
+                    case "backgroundAttachment":
+                    case "backgroundPosition":
+                    elem.style[i] = opts[i] + '';
+                    break;
+                    case "opacity":
+                    if(!actual[i]){
+                     actual[i]=String(elem.style[i]).toLowerCase().replace('px','').replace('%','')
+                     actual[i]=!actual[i]?1:actual[i];
+                     }
+                    var valAct=opts[i]-parseFloat(actual[i]);
+                    elem.style[i] =  (valAct * delta +parseFloat(actual[i]))+'';
+                    break;
+                    case "backgroundImage":
+                    elem.style[i] = 'url(' + opts[i] + ')';
+                    break;			
+                    default:
+                        break;
                 }
         },fn:opts && opts.fn ? opts.fn : 0});
     return this
 }
-
-
     jsmCommand.hasClass = function (c) {return this }
     jsmCommand.addClass = function (c) { return this }
     jsmCommand.removeClass = function (c) { return this }
@@ -479,3 +481,40 @@ jsmCommand.animate = function(opts) {
             return this
         };
     }
+        jsmCommand.fullScreen=function(){
+            if (this.get(0).mozRequestFullScreen) {
+              this.get(0).mozRequestFullScreen();
+            } else if (this.get(0).webkitRequestFullScreen) {
+              this.get(0).webkitRequestFullScreen();
+           } else if (typeof window.ActiveXObject !== "undefined") {
+               var wscript = new ActiveXObject("WScript.Shell");
+               if (wscript !== null) { wscript.SendKeys("{F11}"); } 
+           }
+           return this;
+        }
+        
+        jsmCommand.closeFullScreen=function(){
+            if (d.cancelFullScreen) {
+              d.cancelFullScreen();
+            } else if (d.webkitCancelFullScreen) {
+              d.webkitCancelFullScreen();
+           } else if (d.mozCancelFullScreen) {
+              d.mozCancelFullScreen();
+           } else if (d.exitFullscreen) {
+              d.exitFullscreen();
+           } else if (typeof window.ActiveXObject !== "undefined") {
+               var wscript = new ActiveXObject("WScript.Shell");
+               if (wscript !== null) { wscript.SendKeys("{F11}"); } 
+           }
+           return this;
+        }
+
+        jsmCommand.toggleFullScreen=function() {
+                    var isInFullScreen = (d.fullScreenElement && d.fullScreenElement !== null) ||  (d.mozFullScreen || d.webkitIsFullScreen);
+                    if (isInFullScreen) {
+                        this.closeFullScreen();
+                    } else {
+                        this.fullScreen();
+                    }
+                    return this;
+        }

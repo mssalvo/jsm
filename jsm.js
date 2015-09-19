@@ -16,7 +16,7 @@
  
  The Initial Developer of the Original Code is Salvatore Mariniello.
  Portions created by Salvatore Mariniello are Copyright (C) 2015
- jsmScript. All Rights Reserved.
+ jsmScript. All Rights Reserved..
  
  */
 
